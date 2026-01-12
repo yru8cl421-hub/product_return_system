@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退貨/舊品管理系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .vendor-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .vendor-input-group input {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-edit {
+            background: #f6ad55;
+            color: white;
+            padding: 5px 10px;
+            font-size: 11px;
+            margin-right: 3px;
+        }
+
+        .btn-edit:hover {
+            background: #ed8936;
+        }
+
+        .btn-copy {
+            background: #48bb78;
+            color: white;
+            padding: 5px 10px;
+            font-size: 11px;
+            margin-right: 3px;
+        }
+
+        .btn-copy:hover {
+            background: #38a169;
+        }
+
+        .btn-delete-record {
+            background: #f56565;
+            color: white;
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+
+        .btn-delete-record:hover {
+            background: #e53e3e;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 3px;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+
+        .search-box {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 250px;
+            transition: all 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .records-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .records-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .records-header h2 {
+            color: #333;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .records-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .records-table th,
+        .records-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            white-space: nowrap;
+        }
+
+        .records-table th:last-child,
+        .records-table td:last-child {
+            width: 180px;
+            min-width: 180px;
+        }
+
+        .records-table tbody {
+            display: table;
+            width: 100%;
+        }
+
+        .records-table thead {
+            display: table;
+            width: 100%;
+        }
+
+        .records-table tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        .type-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .type-return {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .type-old {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .vendor-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .vendor-tag {
+            background: #e0e7ff;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vendor-tag button {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .custom-products-section {
+            margin-top: 15px;
+        }
+
+        .category-group {
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .product-tag {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-tag button {
+            background: none;
+            border: none;
+            color: #92400e;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .records-table {
+                font-size: 12px;
+            }
+
+            .records-table th,
+            .records-table td {
+                padding: 8px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 退貨/舊品管理系統</h1>
+            <p style="color: #718096; margin-top: 10px;">汽車零件進退貨追蹤管理</p>
+        </div>
+
+        <div class="form-card">
+            <h2 id="formTitle" style="margin-bottom: 20px; color: #333;">📝 新增記錄</h2>
+            <form id="recordForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>廠商</label>
+                        <div class="vendor-input-group">
+                            <select id="vendor" required>
+                                <option value="">請選擇廠商</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary" onclick="showAddVendor()">+ 新增</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>類型</label>
+                        <select id="type" required>
+                            <option value="">請選擇</option>
+                            <option value="退貨">退貨</option>
+                            <option value="舊品">舊品</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>車廠品牌</label>
+                        <select id="carBrand" required>
+                            <option value="">請選擇品牌</option>
+                            <optgroup label="🇯🇵 日系">
+                                <option value="TOYOTA">TOYOTA（豐田）</option>
+                                <option value="LEXUS">LEXUS</option>
+                                <option value="MITSUBISHI">MITSUBISHI（三菱）</option>
+                                <option value="HONDA">HONDA（本田）</option>
+                                <option value="NISSAN">NISSAN（日產）</option>
+                                <option value="MAZDA">MAZDA</option>
+                                <option value="SUBARU">SUBARU</option>
+                                <option value="SUZUKI">SUZUKI</option>
+                                <option value="ISUZU">ISUZU</option>
+                            </optgroup>
+                            <optgroup label="🇰🇷 韓系">
+                                <option value="HYUNDAI">HYUNDAI（現代）</option>
+                                <option value="KIA">KIA</option>
+                            </optgroup>
+                            <optgroup label="🇩🇪 德系">
+                                <option value="BMW">BMW</option>
+                                <option value="BENZ">BENZ（Mercedes-Benz）</option>
+                                <option value="AUDI">AUDI</option>
+                                <option value="VOLKSWAGEN">VOLKSWAGEN（VW）</option>
+                                <option value="PORSCHE">PORSCHE</option>
+                            </optgroup>
+                            <optgroup label="🇺🇸 美系">
+                                <option value="FORD">FORD</option>
+                                <option value="TESLA">TESLA</option>
+                                <option value="CHEVROLET">CHEVROLET</option>
+                            </optgroup>
+                            <optgroup label="🇨🇳 / 🇹🇼 中台">
+                                <option value="LUXGEN">LUXGEN</option>
+                                <option value="MG">MG</option>
+                                <option value="CMC">中華汽車（CMC）</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>商品分類</label>
+                        <select id="category" required onchange="updateProductOptions()">
+                            <option value="">請選擇分類</option>
+                            <option value="輪圈/輪胎">輪圈/輪胎</option>
+                            <option value="保險桿系統">保險桿系統</option>
+                            <option value="鈑金件">鈑金件</option>
+                            <option value="車門系統">車門系統</option>
+                            <option value="燈具系統">燈具系統</option>
+                            <option value="玻璃系統">玻璃系統</option>
+                            <option value="後視鏡">後視鏡</option>
+                            <option value="內裝">內裝</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>商品名稱</label>
+                        <div class="vendor-input-group">
+                            <select id="product" required>
+                                <option value="">請先選擇分類</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary" onclick="showAddProduct()">+ 新增</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>數量</label>
+                        <input type="number" id="quantity" value="1" min="1" required>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>備註</label>
+                    <input type="text" id="notes" placeholder="選填">
+                </div>
+
+                <input type="hidden" id="editingId" value="">
+                <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">✓ 新增記錄</button>
+                <button type="button" class="btn btn-secondary submit-btn" id="cancelEditBtn" onclick="cancelEdit()" style="display: none; margin-top: 10px;">✕ 取消編輯</button>
+            </form>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 10px; color: #333;">已新增廠商:</h3>
+                <div class="vendor-list" id="vendorList"></div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 10px; color: #333;">自訂商品管理:</h3>
+                <div id="customProductsDisplay"></div>
+            </div>
+        </div>
+
+        <div class="records-card">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <h3>總記錄數</h3>
+                    <div class="number" id="totalRecords">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>退貨</h3>
+                    <div class="number" id="returnCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>舊品</h3>
+                    <div class="number" id="oldCount">0</div>
+                </div>
+            </div>
+
+            <div class="records-header">
+                <h2>📋 記錄列表</h2>
+                <div class="filter-group">
+                    <input type="text" class="search-box" id="quickSearch" placeholder="🔍 搜尋商品/備註/廠商..." oninput="quickSearchRecords()">
+                    <input type="date" id="filterDateStart" placeholder="開始日期">
+                    <input type="date" id="filterDateEnd" placeholder="結束日期">
+                    <select id="filterBrand">
+                        <option value="">全部品牌</option>
+                        <optgroup label="🇯🇵 日系">
+                            <option value="TOYOTA">TOYOTA</option>
+                            <option value="LEXUS">LEXUS</option>
+                            <option value="MITSUBISHI">MITSUBISHI</option>
+                            <option value="HONDA">HONDA</option>
+                            <option value="NISSAN">NISSAN</option>
+                            <option value="MAZDA">MAZDA</option>
+                            <option value="SUBARU">SUBARU</option>
+                            <option value="SUZUKI">SUZUKI</option>
+                            <option value="ISUZU">ISUZU</option>
+                        </optgroup>
+                        <optgroup label="🇰🇷 韓系">
+                            <option value="HYUNDAI">HYUNDAI</option>
+                            <option value="KIA">KIA</option>
+                        </optgroup>
+                        <optgroup label="🇩🇪 德系">
+                            <option value="BMW">BMW</option>
+                            <option value="BENZ">BENZ</option>
+                            <option value="AUDI">AUDI</option>
+                            <option value="VOLKSWAGEN">VOLKSWAGEN</option>
+                            <option value="PORSCHE">PORSCHE</option>
+                        </optgroup>
+                        <optgroup label="🇺🇸 美系">
+                            <option value="FORD">FORD</option>
+                            <option value="TESLA">TESLA</option>
+                            <option value="CHEVROLET">CHEVROLET</option>
+                        </optgroup>
+                        <optgroup label="🇨🇳 / 🇹🇼 中台">
+                            <option value="LUXGEN">LUXGEN</option>
+                            <option value="MG">MG</option>
+                            <option value="CMC">CMC</option>
+                        </optgroup>
+                    </select>
+                    <select id="filterType">
+                        <option value="">全部類型</option>
+                        <option value="退貨">退貨</option>
+                        <option value="舊品">舊品</option>
+                    </select>
+                    <select id="filterVendor">
+                        <option value="">全部廠商</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="filterRecords()">篩選</button>
+                    <button class="btn btn-secondary" onclick="clearFilters()">清除</button>
+                    <button class="btn btn-success" onclick="exportToCSV()">📥 匯出</button>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>廠商</th>
+                            <th>類型</th>
+                            <th>車廠品牌</th>
+                            <th>分類</th>
+                            <th>商品名稱</th>
+                            <th>數量</th>
+                            <th>備註</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody">
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3>目前沒有記錄</h3>
+                <p>新增第一筆記錄開始使用系統</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 商品分類資料 - 預設商品
+        const defaultProductCategories = {
+            '輪圈/輪胎': ['鐵圈', '鋁圈', '輪胎', '輪胎氣嘴', '中心蓋'],
+            '保險桿系統': ['前保桿總成', '後保桿總成', '前保桿外殼', '後保桿外殼', '前保桿骨架', '後保桿骨架', '保桿吸能泡棉', '保桿飾條', '雷達飾蓋'],
+            '鈑金件': ['左前葉子板', '右前葉子板', '引擎蓋', '行李箱蓋', '車頂', '前橫樑', '後橫樑', '側裙'],
+            '車門系統': ['左前車門', '右前車門', '左後車門', '右後車門', '車門外把手', '車門內把手', '車門鉸鏈'],
+            '燈具系統': ['左頭燈', '右頭燈', 'LED 頭燈', '左尾燈', '右尾燈', '第三煞車燈', '方向燈'],
+            '玻璃系統': ['前擋風玻璃', '後擋風玻璃', '左前門玻璃', '右前門玻璃', '左後門玻璃', '右後門玻璃', '後三角窗'],
+            '後視鏡': ['左後視鏡總成', '右後視鏡總成', '後視鏡鏡片', '後視鏡馬達', '後視鏡外殼'],
+            '內裝': ['儀表板', '中控台', '座椅', '安全帶', '車內頂棚', '門板飾板']
+        };
+
+        // 自訂商品 - 從localStorage載入
+        let customProducts = JSON.parse(localStorage.getItem('customProducts')) || {};
+
+        // 初始化資料
+        let vendors = JSON.parse(localStorage.getItem('vendors')) || [];
+        let records = JSON.parse(localStorage.getItem('records')) || [];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 設定今天日期
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // 載入廠商
+            updateVendorSelects();
+            updateVendorList();
+            
+            // 載入記錄
+            displayRecords();
+            updateStats();
+            
+            // 顯示自訂商品
+            displayCustomProducts();
+        });
+
+        // 更新商品選項
+        function updateProductOptions() {
+            const category = document.getElementById('category').value;
+            const productSelect = document.getElementById('product');
+            
+            productSelect.innerHTML = '<option value="">請選擇商品</option>';
+            
+            if (category) {
+                // 合併預設商品和自訂商品
+                const defaultProducts = defaultProductCategories[category] || [];
+                const customProductsList = customProducts[category] || [];
+                const allProducts = [...defaultProducts, ...customProductsList];
+                
+                allProducts.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product;
+                    option.textContent = product;
+                    productSelect.appendChild(option);
+                });
+            }
+        }
+
+        // 顯示新增廠商介面
+        function showAddVendor() {
+            const vendorName = prompt('請輸入新廠商名稱:');
+            if (vendorName && vendorName.trim()) {
+                const trimmedName = vendorName.trim();
+                if (!vendors.includes(trimmedName)) {
+                    vendors.push(trimmedName);
+                    vendors.sort();
+                    localStorage.setItem('vendors', JSON.stringify(vendors));
+                    updateVendorSelects();
+                    updateVendorList();
+                    document.getElementById('vendor').value = trimmedName;
+                } else {
+                    alert('此廠商已存在!');
+                }
+            }
+        }
+
+        // 刪除廠商
+        function removeVendor(vendorName) {
+            // 檢查是否有記錄使用此廠商
+            const isUsed = records.some(r => r.vendor === vendorName);
+            
+            if (isUsed) {
+                alert(`⚠️ 無法刪除!\n\n廠商「${vendorName}」已有 ${records.filter(r => r.vendor === vendorName).length} 筆記錄使用中。\n\n請先刪除或修改相關記錄後再試。`);
+                return;
+            }
+            
+            if (confirm(`確定要刪除廠商「${vendorName}」嗎?`)) {
+                vendors = vendors.filter(v => v !== vendorName);
+                localStorage.setItem('vendors', JSON.stringify(vendors));
+                updateVendorSelects();
+                updateVendorList();
+            }
+        }
+
+        // 顯示新增商品介面
+        function showAddProduct() {
+            const category = document.getElementById('category').value;
+            
+            if (!category) {
+                alert('請先選擇商品分類!');
+                return;
+            }
+            
+            const productName = prompt(`請輸入新商品名稱 (分類: ${category}):`);
+            if (productName && productName.trim()) {
+                const trimmedName = productName.trim();
+                
+                // 初始化分類陣列
+                if (!customProducts[category]) {
+                    customProducts[category] = [];
+                }
+                
+                // 檢查是否已存在(包含預設商品)
+                const defaultProducts = defaultProductCategories[category] || [];
+                const allProducts = [...defaultProducts, ...customProducts[category]];
+                
+                if (allProducts.includes(trimmedName)) {
+                    alert('此商品已存在!');
+                    return;
+                }
+                
+                customProducts[category].push(trimmedName);
+                customProducts[category].sort();
+                localStorage.setItem('customProducts', JSON.stringify(customProducts));
+                
+                updateProductOptions();
+                displayCustomProducts();
+                
+                // 自動選擇新增的商品
+                document.getElementById('product').value = trimmedName;
+            }
+        }
+
+        // 刪除自訂商品
+        function removeCustomProduct(category, productName) {
+            // 檢查是否有記錄使用此商品
+            const isUsed = records.some(r => r.category === category && r.product === productName);
+            
+            if (isUsed) {
+                alert(`⚠️ 無法刪除!\n\n商品「${productName}」已有 ${records.filter(r => r.category === category && r.product === productName).length} 筆記錄使用中。\n\n請先刪除或修改相關記錄後再試。`);
+                return;
+            }
+            
+            if (confirm(`確定要刪除商品「${productName}」嗎?`)) {
+                customProducts[category] = customProducts[category].filter(p => p !== productName);
+                
+                // 如果分類下沒有自訂商品了,刪除該分類
+                if (customProducts[category].length === 0) {
+                    delete customProducts[category];
+                }
+                
+                localStorage.setItem('customProducts', JSON.stringify(customProducts));
+                
+                // 如果當前選擇的分類跟刪除的一樣,更新選項
+                if (document.getElementById('category').value === category) {
+                    updateProductOptions();
+                }
+                
+                displayCustomProducts();
+            }
+        }
+
+        // 顯示自訂商品
+        function displayCustomProducts() {
+            const container = document.getElementById('customProductsDisplay');
+            
+            if (Object.keys(customProducts).length === 0) {
+                container.innerHTML = '<span style="color: #718096; font-size: 13px;">尚未新增自訂商品</span>';
+                return;
+            }
+            
+            let html = '<div class="custom-products-section">';
+            
+            Object.keys(customProducts).sort().forEach(category => {
+                if (customProducts[category].length > 0) {
+                    html += `
+                        <div class="category-group">
+                            <div class="category-title">${category}</div>
+                            <div class="product-tags">
+                    `;
+                    
+                    customProducts[category].forEach(product => {
+                        html += `
+                            <div class="product-tag">
+                                ${product}
+                                <button onclick="removeCustomProduct('${category}', '${product}')" title="刪除">×</button>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // 更新廠商選單
+        function updateVendorSelects() {
+            const vendorSelect = document.getElementById('vendor');
+            const filterVendor = document.getElementById('filterVendor');
+            
+            const currentValue = vendorSelect.value;
+            vendorSelect.innerHTML = '<option value="">請選擇廠商</option>';
+            filterVendor.innerHTML = '<option value="">全部廠商</option>';
+            
+            vendors.forEach(vendor => {
+                const option1 = document.createElement('option');
+                option1.value = vendor;
+                option1.textContent = vendor;
+                vendorSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = vendor;
+                option2.textContent = vendor;
+                filterVendor.appendChild(option2);
+            });
+            
+            if (currentValue) {
+                vendorSelect.value = currentValue;
+            }
+        }
+
+        // 更新廠商列表顯示
+        function updateVendorList() {
+            const vendorList = document.getElementById('vendorList');
+            vendorList.innerHTML = '';
+            
+            if (vendors.length === 0) {
+                vendorList.innerHTML = '<span style="color: #718096;">尚未新增廠商</span>';
+                return;
+            }
+            
+            vendors.forEach(vendor => {
+                const tag = document.createElement('div');
+                tag.className = 'vendor-tag';
+                tag.innerHTML = `
+                    ${vendor}
+                    <button onclick="removeVendor('${vendor}')" title="刪除">×</button>
+                `;
+                vendorList.appendChild(tag);
+            });
+        }
+
+        // 表單提交
+        document.getElementById('recordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const editingId = document.getElementById('editingId').value;
+            
+            if (editingId) {
+                // 更新模式
+                const recordIndex = records.findIndex(r => r.id == editingId);
+                if (recordIndex !== -1) {
+                    records[recordIndex] = {
+                        id: parseInt(editingId),
+                        date: document.getElementById('date').value,
+                        vendor: document.getElementById('vendor').value,
+                        carBrand: document.getElementById('carBrand').value,
+                        type: document.getElementById('type').value,
+                        category: document.getElementById('category').value,
+                        product: document.getElementById('product').value,
+                        quantity: parseInt(document.getElementById('quantity').value),
+                        notes: document.getElementById('notes').value
+                    };
+                    localStorage.setItem('records', JSON.stringify(records));
+                    alert('✓ 記錄已更新!');
+                }
+            } else {
+                // 新增模式
+                const record = {
+                    id: Date.now(),
+                    date: document.getElementById('date').value,
+                    vendor: document.getElementById('vendor').value,
+                    carBrand: document.getElementById('carBrand').value,
+                    type: document.getElementById('type').value,
+                    category: document.getElementById('category').value,
+                    product: document.getElementById('product').value,
+                    quantity: parseInt(document.getElementById('quantity').value),
+                    notes: document.getElementById('notes').value
+                };
+                
+                records.unshift(record);
+                localStorage.setItem('records', JSON.stringify(records));
+                alert('✓ 記錄已新增!');
+            }
+            
+            // 重置表單
+            this.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('product').innerHTML = '<option value="">請先選擇分類</option>';
+            document.getElementById('editingId').value = '';
+            document.getElementById('formTitle').textContent = '📝 新增記錄';
+            document.getElementById('submitBtn').textContent = '✓ 新增記錄';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            
+            displayRecords();
+            updateStats();
+        });
+
+        // 顯示記錄
+        function displayRecords(filteredRecords = null) {
+            const recordsBody = document.getElementById('recordsBody');
+            const emptyState = document.getElementById('emptyState');
+            const displayData = filteredRecords || records;
+            
+            if (displayData.length === 0) {
+                recordsBody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            recordsBody.innerHTML = displayData.map(record => `
+                <tr>
+                    <td>${record.date}</td>
+                    <td>${record.vendor}</td>
+                    <td><span class="type-badge type-${record.type === '退貨' ? 'return' : 'old'}">${record.type}</span></td>
+                    <td>${record.carBrand || '-'}</td>
+                    <td>${record.category}</td>
+                    <td>${record.product}</td>
+                    <td>${record.quantity}</td>
+                    <td>${record.notes || '-'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-copy" onclick="copyRecord(${record.id})" title="複製文字到剪貼簿">📋</button>
+                            <button class="btn btn-edit" onclick="editRecord(${record.id})" title="編輯此記錄">✏️</button>
+                            <button class="btn btn-delete-record" onclick="deleteRecord(${record.id})" title="刪除此記錄">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 刪除記錄
+        function deleteRecord(id) {
+            if (confirm('確定要刪除此記錄嗎?')) {
+                records = records.filter(r => r.id !== id);
+                localStorage.setItem('records', JSON.stringify(records));
+                displayRecords();
+                updateStats();
+            }
+        }
+
+        // 編輯記錄
+        function editRecord(id) {
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+            
+            // 填入表單
+            document.getElementById('date').value = record.date;
+            document.getElementById('vendor').value = record.vendor;
+            document.getElementById('type').value = record.type;
+            document.getElementById('carBrand').value = record.carBrand || '';
+            document.getElementById('category').value = record.category;
+            
+            // 更新商品選項後設定值
+            updateProductOptions();
+            setTimeout(() => {
+                document.getElementById('product').value = record.product;
+            }, 100);
+            
+            document.getElementById('quantity').value = record.quantity;
+            document.getElementById('notes').value = record.notes || '';
+            document.getElementById('editingId').value = record.id;
+            
+            // 更新UI
+            document.getElementById('formTitle').textContent = '✏️ 編輯記錄';
+            document.getElementById('submitBtn').textContent = '✓ 更新記錄';
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            
+            // 捲動到表單
+            document.getElementById('recordForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 取消編輯
+        function cancelEdit() {
+            document.getElementById('recordForm').reset();
+            document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('product').innerHTML = '<option value="">請先選擇分類</option>';
+            document.getElementById('editingId').value = '';
+            document.getElementById('formTitle').textContent = '📝 新增記錄';
+            document.getElementById('submitBtn').textContent = '✓ 新增記錄';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        // 複製記錄
+        function copyRecord(id) {
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+            
+            // 組合文字內容
+            const textToCopy = `日期: ${record.date}
+廠商: ${record.vendor}
+類型: ${record.type}
+車廠品牌: ${record.carBrand || '-'}
+分類: ${record.category}
+商品名稱: ${record.product}
+數量: ${record.quantity}
+備註: ${record.notes || '-'}`;
+            
+            // 複製到剪貼簿
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // 成功提示
+                const btn = event.target.closest('button');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✓ 已複製';
+                btn.style.background = '#38a169';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#48bb78';
+                }, 1500);
+            }).catch(err => {
+                // 失敗時使用舊方法（靜默複製）
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                // 顯示按鈕提示
+                const btn = event.target.closest('button');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✓ 已複製';
+                btn.style.background = '#38a169';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#48bb78';
+                }, 1500);
+            });
+        }
+
+        // 快速搜尋
+        function quickSearchRecords() {
+            const searchTerm = document.getElementById('quickSearch').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                displayRecords();
+                return;
+            }
+            
+            const filtered = records.filter(r => {
+                return (
+                    r.product.toLowerCase().includes(searchTerm) ||
+                    r.vendor.toLowerCase().includes(searchTerm) ||
+                    (r.notes && r.notes.toLowerCase().includes(searchTerm)) ||
+                    (r.carBrand && r.carBrand.toLowerCase().includes(searchTerm)) ||
+                    r.category.toLowerCase().includes(searchTerm)
+                );
+            });
+            
+            displayRecords(filtered);
+        }
+
+        // 清除篩選
+        function clearFilters() {
+            document.getElementById('quickSearch').value = '';
+            document.getElementById('filterDateStart').value = '';
+            document.getElementById('filterDateEnd').value = '';
+            document.getElementById('filterBrand').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterVendor').value = '';
+            displayRecords();
+        }
+
+        // 更新統計
+        function updateStats() {
+            document.getElementById('totalRecords').textContent = records.length;
+            document.getElementById('returnCount').textContent = records.filter(r => r.type === '退貨').length;
+            document.getElementById('oldCount').textContent = records.filter(r => r.type === '舊品').length;
+        }
+
+        // 篩選記錄
+        function filterRecords() {
+            const startDate = document.getElementById('filterDateStart').value;
+            const endDate = document.getElementById('filterDateEnd').value;
+            const brand = document.getElementById('filterBrand').value;
+            const type = document.getElementById('filterType').value;
+            const vendor = document.getElementById('filterVendor').value;
+            
+            let filtered = records;
+            
+            if (startDate) {
+                filtered = filtered.filter(r => r.date >= startDate);
+            }
+            if (endDate) {
+                filtered = filtered.filter(r => r.date <= endDate);
+            }
+            if (brand) {
+                filtered = filtered.filter(r => r.carBrand === brand);
+            }
+            if (type) {
+                filtered = filtered.filter(r => r.type === type);
+            }
+            if (vendor) {
+                filtered = filtered.filter(r => r.vendor === vendor);
+            }
+            
+            displayRecords(filtered);
+        }
+
+        // 匯出CSV
+        function exportToCSV() {
+            if (records.length === 0) {
+                alert('沒有資料可以匯出!');
+                return;
+            }
+            
+            const headers = ['日期', '廠商', '類型', '車廠品牌', '分類', '商品名稱', '數量', '備註'];
+            const csv = [
+                headers.join(','),
+                ...records.map(r => [
+                    r.date,
+                    r.vendor,
+                    r.type,
+                    r.carBrand || '',
+                    r.category,
+                    r.product,
+                    r.quantity,
+                    r.notes || ''
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `退貨舊品記錄_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
