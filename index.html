@@ -195,6 +195,35 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .date-quick-btns {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .btn-date-quick {
+            background: #e0e7ff;
+            color: #667eea;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-date-quick:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-date-quick.active {
+            background: #667eea;
+            color: white;
+        }
+
         .submit-btn {
             width: 100%;
             padding: 15px;
@@ -453,7 +482,7 @@
 
                     <div class="form-group">
                         <label>車廠品牌</label>
-                        <select id="carBrand" required>
+                        <select id="carBrand" required onchange="updateCarModelOptions()">
                             <option value="">請選擇品牌</option>
                             <optgroup label="🇯🇵 日系">
                                 <option value="TOYOTA">TOYOTA（豐田）</option>
@@ -491,6 +520,16 @@
                     </div>
 
                     <div class="form-group">
+                        <label>車名</label>
+                        <div class="vendor-input-group">
+                            <select id="carModel" required>
+                                <option value="">請先選擇品牌</option>
+                            </select>
+                            <button type="button" class="btn btn-secondary" onclick="showAddCarModel()">+ 新增</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
                         <label>商品分類</label>
                         <select id="category" required onchange="updateProductOptions()">
                             <option value="">請選擇分類</option>
@@ -502,6 +541,7 @@
                             <option value="玻璃系統">玻璃系統</option>
                             <option value="後視鏡">後視鏡</option>
                             <option value="內裝">內裝</option>
+                            <option value="其他">其他</option>
                         </select>
                     </div>
 
@@ -530,16 +570,6 @@
                 <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">✓ 新增記錄</button>
                 <button type="button" class="btn btn-secondary submit-btn" id="cancelEditBtn" onclick="cancelEdit()" style="display: none; margin-top: 10px;">✕ 取消編輯</button>
             </form>
-
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
-                <h3 style="margin-bottom: 10px; color: #333;">已新增廠商:</h3>
-                <div class="vendor-list" id="vendorList"></div>
-            </div>
-
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
-                <h3 style="margin-bottom: 10px; color: #333;">自訂商品管理:</h3>
-                <div id="customProductsDisplay"></div>
-            </div>
         </div>
 
         <div class="records-card">
@@ -562,6 +592,12 @@
                 <h2>📋 記錄列表</h2>
                 <div class="filter-group">
                     <input type="text" class="search-box" id="quickSearch" placeholder="🔍 搜尋商品/備註/廠商..." oninput="quickSearchRecords()">
+                    <div class="date-quick-btns">
+                        <button class="btn-date-quick" onclick="setDateFilter('today')">今天</button>
+                        <button class="btn-date-quick" onclick="setDateFilter('thisWeek')">本週</button>
+                        <button class="btn-date-quick" onclick="setDateFilter('thisMonth')">本月</button>
+                        <button class="btn-date-quick" onclick="setDateFilter('lastMonth')">上個月</button>
+                    </div>
                     <input type="date" id="filterDateStart" placeholder="開始日期">
                     <input type="date" id="filterDateEnd" placeholder="結束日期">
                     <select id="filterBrand">
@@ -621,6 +657,7 @@
                             <th>廠商</th>
                             <th>類型</th>
                             <th>車廠品牌</th>
+                            <th>車名</th>
                             <th>分類</th>
                             <th>商品名稱</th>
                             <th>數量</th>
@@ -640,9 +677,52 @@
                 <p>新增第一筆記錄開始使用系統</p>
             </div>
         </div>
+
+        <div class="form-card" style="margin-top: 30px;">
+            <div style="padding-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 10px; color: #333;">📦 已新增廠商:</h3>
+                <div class="vendor-list" id="vendorList"></div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 10px; color: #333;">🛠️ 自訂商品管理:</h3>
+                <div id="customProductsDisplay"></div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 10px; color: #333;">🚗 自訂車名管理:</h3>
+                <div id="customCarModelsDisplay"></div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // 車名資料 - 依品牌分類
+        const carModels = {
+            'TOYOTA': ['VIOS（維歐斯）', 'YARIS（雅力士）', 'ALTIS（阿提斯）', 'COROLLA CROSS（卡羅拉 克羅斯）', 'CAMRY（凱美瑞）', 'RAV4（RAV FOUR／銳放）', 'HILUX（海力士）', 'SIENTA（喜恩塔）', 'INNOVA（伊諾瓦）', 'PRIUS（普銳斯）'],
+            'LEXUS': ['IS（艾艾斯）', 'ES（伊艾斯）', 'GS（吉艾斯）', 'LS（艾艾斯）', 'UX（優艾克斯）', 'NX（恩艾克斯）', 'RX（阿艾克斯）', 'GX（吉艾克斯）', 'LX（艾艾克斯）'],
+            'MITSUBISHI': ['COLT PLUS（可爾特 普拉斯）', 'LANCER（藍瑟）', 'OUTLANDER（歐蘭德）', 'ECLIPSE CROSS（日蝕 克羅斯）', 'PAJERO（帕傑羅）', 'DELICA（得利卡）', 'ZINGER（辛格）'],
+            'HONDA': ['FIT（飛特）', 'CITY（喜提）', 'CIVIC（喜美）', 'ACCORD（雅哥）', 'CR-V（西阿爾－V）', 'HR-V（艾尺阿爾－V）', 'ODYSSEY（奧德賽）'],
+            'NISSAN': ['TIIDA（提達）', 'SENTRA（仙特拉）', 'ALTIMA（奧提馬）', 'TEANA（天娜）', 'KICKS（KICKS／踢克斯）', 'X-TRAIL（X 崔兒）', 'JUKE（啾克）'],
+            'MAZDA': ['MAZDA2（馬自達 二）', 'MAZDA3（馬自達 三）', 'MAZDA6（馬自達 六）', 'CX-3（西艾克斯 三）', 'CX-30（西艾克斯 三十）', 'CX-5（西艾克斯 五）', 'CX-9（西艾克斯 九）'],
+            'SUBARU': ['IMPREZA（硬普瑞薩）', 'XV（艾克斯五）', 'FORESTER（佛瑞斯特）', 'OUTBACK（奧特拜克）', 'LEGACY（雷格西）', 'WRX（W R X）', 'BRZ（B R Z）'],
+            'SUZUKI': ['SWIFT（史威夫特）', 'BALENO（巴雷諾）', 'VITARA（維塔拉）', 'JIMNY（吉姆尼）', 'CIAZ（西雅士）'],
+            'ISUZU': ['ELF（艾爾夫）', 'D-MAX（D 麥斯）', 'MU-X（M U X）'],
+            'HYUNDAI': ['GETZ（蓋茲）', 'ACCENT（艾森）', 'ELANTRA（伊蘭特）', 'SONATA（索納塔）', 'TUCSON（土桑）', 'SANTA FE（聖塔菲）', 'STARIA（史塔利亞）'],
+            'KIA': ['PICANTO（皮肯托）', 'RIO（里歐）', 'CERATO（賽拉托）', 'K5（K FIVE）', 'SPORTAGE（史波提吉）', 'SORENTO（索蘭托）', 'CARNIVAL（卡尼瓦）'],
+            'BMW': ['1 SERIES（一系列）', '2 SERIES（二系列）', '3 SERIES（三系列）', '5 SERIES（五系列）', '7 SERIES（七系列）', 'X1（艾克斯一）', 'X3（艾克斯三）', 'X5（艾克斯五）', 'X7（艾克斯七）'],
+            'BENZ': ['A-CLASS（A 級）', 'B-CLASS（B 級）', 'C-CLASS（C 級）', 'E-CLASS（E 級）', 'S-CLASS（S 級）', 'GLA（G L A）', 'GLC（G L C）', 'GLE（G L E）', 'GLS（G L S）'],
+            'AUDI': ['A1（A 一）', 'A3（A 三）', 'A4（A 四）', 'A6（A 六）', 'A8（A 八）', 'Q2（Q 二）', 'Q3（Q 三）', 'Q5（Q 五）', 'Q7（Q 七）'],
+            'VOLKSWAGEN': ['GOLF（高爾夫）', 'POLO（波羅）', 'PASSAT（帕薩特）', 'TIGUAN（提觀）', 'TOUAREG（途銳）', 'T-ROC（T 洛克）'],
+            'PORSCHE': ['911（九一一）', '718（七一八）', 'PANAMERA（帕拉梅拉）', 'MACAN（馬康）', 'CAYENNE（凱燕）', 'TAYCAN（泰肯）'],
+            'FORD': ['FOCUS（福克斯）', 'FIESTA（菲斯塔）', 'MONDEO（蒙迪歐）', 'KUGA（酷卡）', 'ESCAPE（艾斯卡佩）', 'RANGER（藍吉）'],
+            'TESLA': ['MODEL S（模特 S）', 'MODEL 3（模特 三）', 'MODEL X（模特 X）', 'MODEL Y（模特 Y）'],
+            'CHEVROLET': ['CRUZE（酷魯茲）', 'CAPTIVA（卡皮瓦）', 'TRAX（傳克斯）', 'TAHOE（塔霍）'],
+            'LUXGEN': ['U5（優五）', 'U6（優六）', 'U7（優七）', 'URX（優阿爾艾克斯）'],
+            'MG': ['MG3（M G 三）', 'MG4（M G 四）', 'MG5（M G 五）', 'MG HS（M G H S）', 'MG ZS（M G Z S）'],
+            'CMC': ['VERYCA（威利卡）', 'DELICA（得利卡）', 'ZINGER（辛格）', 'J SPACE（J 空間）']
+        };
+
         // 商品分類資料 - 預設商品
         const defaultProductCategories = {
             '輪圈/輪胎': ['鐵圈', '鋁圈', '輪胎', '輪胎氣嘴', '中心蓋'],
@@ -652,11 +732,15 @@
             '燈具系統': ['左頭燈', '右頭燈', 'LED 頭燈', '左尾燈', '右尾燈', '第三煞車燈', '方向燈'],
             '玻璃系統': ['前擋風玻璃', '後擋風玻璃', '左前門玻璃', '右前門玻璃', '左後門玻璃', '右後門玻璃', '後三角窗'],
             '後視鏡': ['左後視鏡總成', '右後視鏡總成', '後視鏡鏡片', '後視鏡馬達', '後視鏡外殼'],
-            '內裝': ['儀表板', '中控台', '座椅', '安全帶', '車內頂棚', '門板飾板']
+            '內裝': ['儀表板', '中控台', '座椅', '安全帶', '車內頂棚', '門板飾板'],
+            '其他': []
         };
 
         // 自訂商品 - 從localStorage載入
         let customProducts = JSON.parse(localStorage.getItem('customProducts')) || {};
+
+        // 自訂車名 - 從localStorage載入
+        let customCarModels = JSON.parse(localStorage.getItem('customCarModels')) || {};
 
         // 初始化資料
         let vendors = JSON.parse(localStorage.getItem('vendors')) || [];
@@ -677,6 +761,9 @@
             
             // 顯示自訂商品
             displayCustomProducts();
+            
+            // 顯示自訂車名
+            displayCustomCarModels();
         });
 
         // 更新商品選項
@@ -697,6 +784,28 @@
                     option.value = product;
                     option.textContent = product;
                     productSelect.appendChild(option);
+                });
+            }
+        }
+
+        // 更新車名選項
+        function updateCarModelOptions() {
+            const brand = document.getElementById('carBrand').value;
+            const carModelSelect = document.getElementById('carModel');
+            
+            carModelSelect.innerHTML = '<option value="">請選擇車名</option>';
+            
+            if (brand) {
+                // 合併預設車名和自訂車名
+                const defaultModels = carModels[brand] || [];
+                const customModelsList = customCarModels[brand] || [];
+                const allModels = [...defaultModels, ...customModelsList];
+                
+                allModels.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    carModelSelect.appendChild(option);
                 });
             }
         }
@@ -844,6 +953,113 @@
             container.innerHTML = html;
         }
 
+        // 顯示新增車名介面
+        function showAddCarModel() {
+            const brand = document.getElementById('carBrand').value;
+            
+            if (!brand) {
+                alert('請先選擇車廠品牌!');
+                return;
+            }
+            
+            const carModelName = prompt(`請輸入新車名 (品牌: ${brand}):\n格式範例: ALTIS（阿提斯）`);
+            if (carModelName && carModelName.trim()) {
+                const trimmedName = carModelName.trim();
+                
+                // 初始化品牌陣列
+                if (!customCarModels[brand]) {
+                    customCarModels[brand] = [];
+                }
+                
+                // 檢查是否已存在(包含預設車名)
+                const defaultModels = carModels[brand] || [];
+                const allModels = [...defaultModels, ...customCarModels[brand]];
+                
+                if (allModels.includes(trimmedName)) {
+                    alert('此車名已存在!');
+                    return;
+                }
+                
+                customCarModels[brand].push(trimmedName);
+                customCarModels[brand].sort();
+                localStorage.setItem('customCarModels', JSON.stringify(customCarModels));
+                
+                updateCarModelOptions();
+                displayCustomCarModels();
+                
+                // 自動選擇新增的車名
+                document.getElementById('carModel').value = trimmedName;
+            }
+        }
+
+        // 刪除自訂車名
+        function removeCustomCarModel(brand, modelName) {
+            // 檢查是否有記錄使用此車名
+            const isUsed = records.some(r => r.carBrand === brand && r.carModel === modelName);
+            
+            if (isUsed) {
+                alert(`⚠️ 無法刪除!\n\n車名「${modelName}」已有 ${records.filter(r => r.carBrand === brand && r.carModel === modelName).length} 筆記錄使用中。\n\n請先刪除或修改相關記錄後再試。`);
+                return;
+            }
+            
+            if (confirm(`確定要刪除車名「${modelName}」嗎?`)) {
+                customCarModels[brand] = customCarModels[brand].filter(m => m !== modelName);
+                
+                // 如果品牌下沒有自訂車名了,刪除該品牌
+                if (customCarModels[brand].length === 0) {
+                    delete customCarModels[brand];
+                }
+                
+                localStorage.setItem('customCarModels', JSON.stringify(customCarModels));
+                
+                // 如果當前選擇的品牌跟刪除的一樣,更新選項
+                if (document.getElementById('carBrand').value === brand) {
+                    updateCarModelOptions();
+                }
+                
+                displayCustomCarModels();
+            }
+        }
+
+        // 顯示自訂車名
+        function displayCustomCarModels() {
+            const container = document.getElementById('customCarModelsDisplay');
+            
+            if (Object.keys(customCarModels).length === 0) {
+                container.innerHTML = '<span style="color: #718096; font-size: 13px;">尚未新增自訂車名</span>';
+                return;
+            }
+            
+            let html = '<div class="custom-products-section">';
+            
+            Object.keys(customCarModels).sort().forEach(brand => {
+                if (customCarModels[brand].length > 0) {
+                    html += `
+                        <div class="category-group">
+                            <div class="category-title">${brand}</div>
+                            <div class="product-tags">
+                    `;
+                    
+                    customCarModels[brand].forEach(model => {
+                        html += `
+                            <div class="product-tag">
+                                ${model}
+                                <button onclick="removeCustomCarModel('${brand}', '${model.replace(/'/g, "\\'")}');" title="刪除">×</button>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
         // 更新廠商選單
         function updateVendorSelects() {
             const vendorSelect = document.getElementById('vendor');
@@ -905,8 +1121,9 @@
                         id: parseInt(editingId),
                         date: document.getElementById('date').value,
                         vendor: document.getElementById('vendor').value,
-                        carBrand: document.getElementById('carBrand').value,
                         type: document.getElementById('type').value,
+                        carBrand: document.getElementById('carBrand').value,
+                        carModel: document.getElementById('carModel').value,
                         category: document.getElementById('category').value,
                         product: document.getElementById('product').value,
                         quantity: parseInt(document.getElementById('quantity').value),
@@ -921,8 +1138,9 @@
                     id: Date.now(),
                     date: document.getElementById('date').value,
                     vendor: document.getElementById('vendor').value,
-                    carBrand: document.getElementById('carBrand').value,
                     type: document.getElementById('type').value,
+                    carBrand: document.getElementById('carBrand').value,
+                    carModel: document.getElementById('carModel').value,
                     category: document.getElementById('category').value,
                     product: document.getElementById('product').value,
                     quantity: parseInt(document.getElementById('quantity').value),
@@ -937,6 +1155,7 @@
             // 重置表單
             this.reset();
             document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('carModel').innerHTML = '<option value="">請先選擇品牌</option>';
             document.getElementById('product').innerHTML = '<option value="">請先選擇分類</option>';
             document.getElementById('editingId').value = '';
             document.getElementById('formTitle').textContent = '📝 新增記錄';
@@ -966,6 +1185,7 @@
                     <td>${record.vendor}</td>
                     <td><span class="type-badge type-${record.type === '退貨' ? 'return' : 'old'}">${record.type}</span></td>
                     <td>${record.carBrand || '-'}</td>
+                    <td>${record.carModel || '-'}</td>
                     <td>${record.category}</td>
                     <td>${record.product}</td>
                     <td>${record.quantity}</td>
@@ -1001,6 +1221,13 @@
             document.getElementById('vendor').value = record.vendor;
             document.getElementById('type').value = record.type;
             document.getElementById('carBrand').value = record.carBrand || '';
+            
+            // 更新車名選項後設定值
+            updateCarModelOptions();
+            setTimeout(() => {
+                document.getElementById('carModel').value = record.carModel || '';
+            }, 50);
+            
             document.getElementById('category').value = record.category;
             
             // 更新商品選項後設定值
@@ -1026,6 +1253,7 @@
         function cancelEdit() {
             document.getElementById('recordForm').reset();
             document.getElementById('date').valueAsDate = new Date();
+            document.getElementById('carModel').innerHTML = '<option value="">請先選擇品牌</option>';
             document.getElementById('product').innerHTML = '<option value="">請先選擇分類</option>';
             document.getElementById('editingId').value = '';
             document.getElementById('formTitle').textContent = '📝 新增記錄';
@@ -1043,6 +1271,7 @@
 廠商: ${record.vendor}
 類型: ${record.type}
 車廠品牌: ${record.carBrand || '-'}
+車名: ${record.carModel || '-'}
 分類: ${record.category}
 商品名稱: ${record.product}
 數量: ${record.quantity}
@@ -1114,7 +1343,67 @@
             document.getElementById('filterBrand').value = '';
             document.getElementById('filterType').value = '';
             document.getElementById('filterVendor').value = '';
+            
+            // 移除按鈕active狀態
+            document.querySelectorAll('.btn-date-quick').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
             displayRecords();
+        }
+
+        // 日期快速篩選
+        function setDateFilter(period) {
+            const today = new Date();
+            let startDate, endDate;
+            
+            switch(period) {
+                case 'today':
+                    startDate = endDate = today;
+                    break;
+                    
+                case 'thisWeek':
+                    // 本週 (週日到週六)
+                    const dayOfWeek = today.getDay();
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - dayOfWeek);
+                    endDate = new Date(today);
+                    endDate.setDate(today.getDate() + (6 - dayOfWeek));
+                    break;
+                    
+                case 'thisMonth':
+                    // 本月
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+                    
+                case 'lastMonth':
+                    // 上個月
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                    break;
+            }
+            
+            // 格式化日期為 YYYY-MM-DD
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            // 設定日期篩選欄位
+            document.getElementById('filterDateStart').value = formatDate(startDate);
+            document.getElementById('filterDateEnd').value = formatDate(endDate);
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.btn-date-quick').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 執行篩選
+            filterRecords();
         }
 
         // 更新統計
@@ -1160,7 +1449,7 @@
                 return;
             }
             
-            const headers = ['日期', '廠商', '類型', '車廠品牌', '分類', '商品名稱', '數量', '備註'];
+            const headers = ['日期', '廠商', '類型', '車廠品牌', '車名', '分類', '商品名稱', '數量', '備註'];
             const csv = [
                 headers.join(','),
                 ...records.map(r => [
@@ -1168,6 +1457,7 @@
                     r.vendor,
                     r.type,
                     r.carBrand || '',
+                    r.carModel || '',
                     r.category,
                     r.product,
                     r.quantity,
